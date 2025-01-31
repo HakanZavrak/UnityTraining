@@ -1,16 +1,28 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Animator anima;
-    
+
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
-    
+
+    [Header("Dash Info")]
+    [SerializeField] private float dashSpeed;
+    [SerializeField] private float fallSpeed;
+    [SerializeField] private float dashDuration;
+    private float dashTime;
+    [SerializeField] private float dashCooldown;
+    private float dashCooldownTimer;
+
+    [Header("Attack Info")]
+    private bool isAttacking;
+    private int comboCounter;
+
+
     private float xInput;
-    private int facing=1;
+    private int facing = 1;
     private bool facingRight = true;
 
     [Header("Collison info")]
@@ -29,8 +41,19 @@ public class Player : MonoBehaviour
         Movement();
         CheckInput();
         CollisonChecks();
+
+        dashTime -= Time.deltaTime;
+        dashCooldownTimer -= Time.deltaTime;
+
+
+
         FlipController();
         AnimatorControllers();
+    }
+
+    public void AttackOver() 
+    { 
+        isAttacking = false;
     }
 
     private void CollisonChecks()
@@ -42,21 +65,47 @@ public class Player : MonoBehaviour
     {
         xInput = Input.GetAxisRaw("Horizontal");
 
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            isAttacking = true;
+        }
         if (Input.GetKeyDown(KeyCode.Space))
             Jump();
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            DashAbility();
+        }
+    }
+
+    private void DashAbility()
+    {
+        if (dashCooldownTimer < 0)
+        {
+            dashCooldownTimer = dashCooldown;
+            dashTime = dashDuration;
+        }
     }
 
     private void Movement()
     {
-        rb.linearVelocity = new Vector2(xInput * moveSpeed, rb.linearVelocity.y);
+        if (dashTime > 0)
+        {
+            rb.linearVelocity = new Vector2(xInput * dashSpeed, rb.linearVelocity.y * fallSpeed);
+            //Debug.Log(rb.linearVelocity.y * fallSpeed);
+        }
+        else
+        {
+            rb.linearVelocity = new Vector2(xInput * moveSpeed, rb.linearVelocity.y);
+        }
     }
 
     private void Jump()
     {
-        if (isGrounded) { 
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce); 
+        if (isGrounded)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
-        
+
     }
 
     private void AnimatorControllers()
@@ -65,7 +114,10 @@ public class Player : MonoBehaviour
 
         anima.SetFloat("yVelocity", rb.linearVelocity.y);
         anima.SetBool("isMove", isMove);
-        anima.SetBool("isGrounded",isGrounded);
+        anima.SetBool("isGrounded", isGrounded);
+        anima.SetBool("isDash", dashTime > 0);
+        anima.SetBool("isAttacking", isAttacking);
+        anima.SetInteger("comboCounter", comboCounter);
     }
 
     private void Flip()
@@ -79,12 +131,12 @@ public class Player : MonoBehaviour
     {
         if (rb.linearVelocity.x > 0 && !facingRight)
             Flip();
-        else if (rb.linearVelocity.x < 0 && facingRight) 
-            Flip();   
+        else if (rb.linearVelocity.x < 0 && facingRight)
+            Flip();
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawLine(transform.position,new Vector3(transform.position.x,transform.position.y - groundCheckDistance));
+        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
     }
 }
