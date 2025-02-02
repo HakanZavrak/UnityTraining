@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     private float dashCooldownTimer;
 
     [Header("Attack Info")]
+    [SerializeField]private float comboTime = .8f;
+    private float comboTimeWindow;
     private bool isAttacking;
     private int comboCounter;
 
@@ -44,6 +46,8 @@ public class Player : MonoBehaviour
 
         dashTime -= Time.deltaTime;
         dashCooldownTimer -= Time.deltaTime;
+        comboTimeWindow -= Time.deltaTime;
+
 
 
 
@@ -54,6 +58,10 @@ public class Player : MonoBehaviour
     public void AttackOver() 
     { 
         isAttacking = false;
+        comboCounter++;
+        if (comboCounter > 2) 
+            comboCounter = 0;
+     
     }
 
     private void CollisonChecks()
@@ -67,7 +75,7 @@ public class Player : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-            isAttacking = true;
+            StartAttackEvent();
         }
         if (Input.GetKeyDown(KeyCode.Space))
             Jump();
@@ -77,9 +85,19 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void StartAttackEvent()
+    {
+        if(!isGrounded)
+            return;
+        if (comboTimeWindow < 0)
+            comboCounter = 0;
+        isAttacking = true;
+        comboTimeWindow = comboTime;
+    }
+
     private void DashAbility()
     {
-        if (dashCooldownTimer < 0)
+        if (dashCooldownTimer < 0 && !isAttacking)
         {
             dashCooldownTimer = dashCooldown;
             dashTime = dashDuration;
@@ -88,9 +106,12 @@ public class Player : MonoBehaviour
 
     private void Movement()
     {
-        if (dashTime > 0)
+        if (isAttacking) {
+            rb.linearVelocity = new Vector2(0, 0);
+        }
+        else if (dashTime > 0)
         {
-            rb.linearVelocity = new Vector2(xInput * dashSpeed, rb.linearVelocity.y * fallSpeed);
+            rb.linearVelocity = new Vector2(facing * dashSpeed, rb.linearVelocity.y * fallSpeed);
             //Debug.Log(rb.linearVelocity.y * fallSpeed);
         }
         else

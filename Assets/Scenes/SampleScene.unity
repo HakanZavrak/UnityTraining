@@ -198,7 +198,8 @@ MonoBehaviour:
   dashSpeed: 25
   fallSpeed: -0.87
   dashDuration: 0.25
-  dashCooldown: 10
+  dashCooldown: 1.3
+  comboTime: 0.7
   groundCheckDistance: 1.4
   whatIsGround:
     serializedVersion: 2
