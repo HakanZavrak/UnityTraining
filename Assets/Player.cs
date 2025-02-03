@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-    private Rigidbody2D rb;
-    private Animator anima;
+
 
     [SerializeField] private float moveSpeed;
     [SerializeField] private float jumpForce;
@@ -24,31 +23,27 @@ public class Player : MonoBehaviour
 
 
     private float xInput;
-    private int facing = 1;
-    private bool facingRight = true;
 
-    [Header("Collison info")]
-    [SerializeField] private float groundCheckDistance;
-    [SerializeField] private LayerMask whatIsGround;
-    private bool isGrounded;
 
-    void Start()
+
+    
+
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        anima = GetComponentInChildren<Animator>();
+        base.Start();
     }
 
-    void Update()
+    protected override void Update()
     {
+        base.Update();
+
         Movement();
         CheckInput();
-        CollisonChecks();
+
 
         dashTime -= Time.deltaTime;
         dashCooldownTimer -= Time.deltaTime;
         comboTimeWindow -= Time.deltaTime;
-
-
 
 
         FlipController();
@@ -64,10 +59,7 @@ public class Player : MonoBehaviour
      
     }
 
-    private void CollisonChecks()
-    {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
-    }
+
 
     private void CheckInput()
     {
@@ -141,12 +133,7 @@ public class Player : MonoBehaviour
         anima.SetInteger("comboCounter", comboCounter);
     }
 
-    private void Flip()
-    {
-        facing = facing * -1;
-        facingRight = !facingRight;
-        transform.Rotate(0, 180, 0);
-    }
+
 
     private void FlipController()
     {
@@ -156,8 +143,4 @@ public class Player : MonoBehaviour
             Flip();
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
-    }
 }
