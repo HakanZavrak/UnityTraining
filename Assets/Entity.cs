@@ -6,6 +6,7 @@ public class Entity : MonoBehaviour
     protected Rigidbody2D rb;
     protected Animator anima;
 
+    [Header("Facing Info")]
     protected int facing = 1;
     protected bool facingRight = true;
 
